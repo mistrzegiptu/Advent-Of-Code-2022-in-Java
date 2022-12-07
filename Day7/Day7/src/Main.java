@@ -14,7 +14,7 @@ public class Main {
     {
         try(BufferedReader br = new BufferedReader(new FileReader("C:/Users/mistr/Desktop/AdventOfCode2022/Advent-Of-Code-2022-in-Java/Inputs/test7.txt")))
         {
-            Node head = new Node(new ArrayList<>(), 0);
+            Node head = new Node(new ArrayList<>(), 0, "/");
             Node actualNode = head;
             br.readLine();
             br.readLine();
@@ -24,19 +24,19 @@ public class Main {
                 String[] input = line.split(" ");
                 if(input[0].equals("$"))
                 {
-
+                    if(input[1].equals("cd"))
+                    {
+                        actualNode = actualNode.dirs.stream().filter(x -> x.name.equals(input[2])).findAny().orElse(actualNode);
+                    }
                 }
                 else if(input[0].equals("dir"))
                 {
-                    head.dirs.add(new Node(new ArrayList<>(), 0));
-                    if(!actualNode.equals(head))
-                    {
-                        actualNode.dirs.add(new Node(new ArrayList<>(), 0));
-                    }
+                    actualNode.dirs.add(new Node(new ArrayList<>(), 0, input[1]));
                 }
                 else
                 {
                     head.size += Integer.parseInt(input[0]);
+                    actualNode.size += Integer.parseInt(input[0]);
                 }
             }
         }
@@ -49,11 +49,13 @@ public class Main {
 class Node
 {
     List<Node> dirs = new ArrayList<>();
+    String name;
     public int size;
 
-    public Node(List<Node> dirs, int size)
+    public Node(List<Node> dirs, int size, String name)
     {
         this.dirs = dirs;
+        this.name = name;
         this.size = size;
     }
 }
