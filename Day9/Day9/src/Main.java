@@ -7,11 +7,10 @@ import java.util.List;
 
 public class Main
 {
-    static char[][] input = new char[10][10];
-    static record Point(int x, int y){};
-    static List<Point> moves = new ArrayList<>();
-    static int size = 6;
-    static int xHead = size-1, yHead = 0, xTail = size-1, yTail = 0;
+    record coords(int x, int y){}
+    static List<coords> moves = new ArrayList<>();
+    static List<Point> knots = new ArrayList<>();
+    static int xHead = 0, yHead = 0, xTail = 0, yTail = 0;
 
     public static void main(String[] args) throws IOException
     {
@@ -20,10 +19,10 @@ public class Main
     }
     public static void PartOne() throws IOException
     {
-        try(BufferedReader br = new BufferedReader(new FileReader("C:/Users/mistr/Desktop/AdventOfCode2022/Advent-Of-Code-2022-in-Java/Inputs/test9.txt")))
+        try(BufferedReader br = new BufferedReader(new FileReader("C:/Users/mistr/Desktop/AdventOfCode2022/Advent-Of-Code-2022-in-Java/Inputs/input9.txt")))
         {
+            moves.add(new coords(0,0));
             String line;
-            Boolean firstMove = true;
             while((line = br.readLine()) != null)
             {
                 char dir = line.split(" ")[0].charAt(0);
@@ -34,11 +33,6 @@ public class Main
                     for(int i = 0; i < moveCount; i++)
                     {
                         yHead++;
-                        if(firstMove)
-                        {
-                            firstMove = false;
-                            continue;
-                        }
                         MoveTail();
                     }
                 }
@@ -47,11 +41,6 @@ public class Main
                     for(int i = 0; i < moveCount; i++)
                     {
                         yHead--;
-                        if(firstMove)
-                        {
-                            firstMove = false;
-                            continue;
-                        }
                         MoveTail();
                     }
                 }
@@ -60,11 +49,6 @@ public class Main
                     for(int i = 0; i < moveCount; i++)
                     {
                         xHead--;
-                        if(firstMove)
-                        {
-                            firstMove = false;
-                            continue;
-                        }
                         MoveTail();
                     }
                 }
@@ -73,95 +57,104 @@ public class Main
                     for(int i = 0; i < moveCount; i++)
                     {
                         xHead++;
-                        if(firstMove)
-                        {
-                            firstMove = false;
-                            continue;
-                        }
                         MoveTail();
                     }
                 }
             }
         }
         System.out.println(moves.size());
+        moves.clear();
     }
     public static void MoveTail()
     {
-        if(xHead == xTail)
+        int deltaX = xHead - xTail, deltaY = yHead - yTail;
+        if(!(Math.abs(deltaX) <= 1 && Math.abs(deltaY) <= 1))
         {
-            if(yHead>yTail)
-            {
-                yTail++;
-            }
-            else if(yHead<yTail)
-            {
-                yTail--;
-            }
+            xTail += SignOf(deltaX);
+            yTail += SignOf(deltaY);
         }
-        else if(yHead == yTail)
+        if(!moves.contains(new coords(xTail, yTail)))
         {
-            if(xHead>xTail)
-            {
-                xHead++;
-            }
-            else if(xHead<xTail)
-            {
-                xHead--;
-            }
-        }
-        else
-        {
-            if(Math.abs(xHead-xTail)>1||Math.abs(yHead-yTail)>1)
-            {
-                if (xHead > xTail)
-                {
-                    if (yHead > yTail)
-                    {
-                        xTail++;
-                        yTail++;
-                    }
-                    else
-                    {
-                        xTail++;
-                        yTail--;
-                    }
-                }
-                else if (xHead < xTail)
-                {
-                    if (yHead > yTail)
-                    {
-                        xTail--;
-                        yTail++;
-                    } else
-                    {
-                        xTail--;
-                        yTail--;
-                    }
-                }
-            }
-        }
-        for(int i = 0; i < size; i++)
-        {
-            for(int j = 0; j < size; j++)
-            {
-                if(i==xTail&&j==yTail)
-                    System.out.print("T");
-                else if(i==xHead&&j==yHead)
-                    System.out.print("H");
-                else
-                    System.out.print(".");
-            }
-            System.out.println();
-        }
-        System.out.println();
-        System.out.println();
-        if(!moves.contains(new Point(xTail, yTail)))
-        {
-            moves.add(new Point(xTail, yTail));
+            moves.add(new coords(xTail, yTail));
         }
     }
-    public static void PartTwo()
+    public static int SignOf(int n)
     {
+        return n == 0 ? 0 : n > 0 ? 1 : -1;
+    }
+    public static void PartTwo() throws IOException
+    {
+        try(BufferedReader br = new BufferedReader(new FileReader("C:/Users/mistr/Desktop/AdventOfCode2022/Advent-Of-Code-2022-in-Java/Inputs/input9.txt")))
+        {
+            moves.add(new coords(0,0));
+            for(int i = 0; i < 10; i++)
+                knots.add(new Point(0,0));
+            String line;
+            while((line = br.readLine()) != null)
+            {
+                char dir = line.split(" ")[0].charAt(0);
+                int moveCount = Integer.parseInt(line.split(" ")[1]);
 
+                if(dir=='R')
+                {
+                    for(int i = 0; i < moveCount; i++)
+                    {
+                        knots.get(0).y += 1;
+                        for(int j = 1; j < 10; j++)
+                        {
+                            MoveBody(knots.get(j-1), j);
+                        }
+                    }
+                }
+                else if(dir=='L')
+                {
+                    for(int i = 0; i < moveCount; i++)
+                    {
+                        knots.get(0).y -= 1;
+                        for (int j = 1; j < 10; j++)
+                        {
+                            MoveBody(knots.get(j - 1), j);
+                        }
+                    }
+                }
+                else if(dir=='U')
+                {
+                    for(int i = 0; i < moveCount; i++)
+                    {
+                        knots.get(0).x -= 1;
+                        for(int j = 1; j < 10; j++)
+                        {
+                            MoveBody(knots.get(j-1), j);
+                        }
+                    }
+                }
+                else if(dir=='D')
+                {
+                    for(int i = 0; i < moveCount; i++)
+                    {
+                        knots.get(0).x += 1;
+                        for(int j = 1; j < 10; j++)
+                        {
+                            MoveBody(knots.get(j-1), j);
+                        }
+                    }
+                }
+            }
+        }
+        System.out.println(moves.size());
+    }
+    public static void MoveBody(Point h, int index)
+    {
+        Point t = knots.get(index);
+        int deltaX = h.x - t.x, deltaY = h.y - t.y;
+        if(!(Math.abs(deltaX) <= 1 && Math.abs(deltaY) <= 1))
+        {
+            knots.get(index).x += SignOf(deltaX);
+            knots.get(index).y += SignOf(deltaY);
+        }
+        if(!moves.contains(new coords(knots.get(9).x, knots.get(9).y)))
+        {
+            moves.add(new coords(knots.get(9).x, knots.get(9).y));
+        }
     }
 }
