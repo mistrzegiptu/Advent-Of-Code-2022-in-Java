@@ -3,7 +3,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.math.BigInteger;
 
 public class Main
 {
@@ -15,7 +17,7 @@ public class Main
     }
     public static void PartOne() throws IOException
     {
-        try(BufferedReader br = new BufferedReader(new FileReader("C:/Users/mistr/Desktop/AdventOfCode2022/Advent-Of-Code-2022-in-Java/Inputs/test11.txt")))
+        try(BufferedReader br = new BufferedReader(new FileReader("C:/Users/mistr/Desktop/AdventOfCode2022/Advent-Of-Code-2022-in-Java/Inputs/input11.txt")))
         {
             do
             {
@@ -23,30 +25,40 @@ public class Main
                 String items = br.readLine().substring(17);
                 String[] itemsToList = items.split(", ");
                 List<BigInteger> itemsList = new ArrayList<>();
-                
+
                 for(int i = 0; i < itemsToList.length; i++)
                 {
-                    itemsList.add(Long.parseLong(itemsToList[i].trim()));
+                    itemsList.add(new BigInteger(itemsToList[i].trim()));
                 }
                 String operations = br.readLine();
                 String[] division = br.readLine().split(" ");
-                long divisibleBy = Long.parseLong(division[division.length-1]);
+                BigInteger divisibleBy = new BigInteger(division[division.length-1]);
                 int trueMonke = br.readLine().charAt(29)-'0';
                 int falseMonke = br.readLine().charAt(30)-'0';
                 monkeys.add(new Monkey(itemsList, operations, divisibleBy, trueMonke, falseMonke));
             }while(br.readLine() != null);
         }
-        for(int counter = 0; counter < 1000; counter++)
+        BigInteger prod = new BigInteger("1");
+        for(int i = 0; i < monkeys.size(); i++)
+        {
+            prod = prod.multiply(monkeys.get(i).divisibleBy);
+        }
+        for(int counter = 0; counter < 10000; counter++)
         {
             for (int i = 0; i < monkeys.size(); i++)
             {
                 while (monkeys.get(i).startingItems.size() > 0)
                 {
-                    long value = monkeys.get(i).startingItems.get(0);
+                    BigInteger value = monkeys.get(i).startingItems.get(0);
                     monkeys.get(i).startingItems.remove(0);
                     monkeys.get(i).inspections++;
                     value = monkeys.get(i).Operation(value);
-                    //value = value / 3;
+
+                    //Uncomment for part two:
+                    value = value.mod(prod);
+
+                    //Uncomment for part one:
+                    //value = value.divide(new BigInteger("3"));
                     monkeys.get(monkeys.get(i).Test(value)).startingItems.add(value);
                 }
             }
@@ -55,62 +67,61 @@ public class Main
         {
             System.out.println(monkeys.get(i).inspections);
         }
-        //monkeys.sort((Monkey monk1, Monkey monk2) -> Integer.compare(monk1.inspections, monk2.inspections));
-        //System.out.println(monkeys.get(monkeys.size()-1).inspections*monkeys.get(monkeys.size()-2).inspections);
-    }
-    public static void PartTwo() throws IOException
-    {
-
+        monkeys.sort((Monkey monk1, Monkey monk2) -> Integer.compare(monk1.inspections, monk2.inspections));
+        System.out.println((long)monkeys.get(monkeys.size()-1).inspections*(long)monkeys.get(monkeys.size()-2).inspections);
     }
 }
 class Monkey
 {
     public List<BigInteger> startingItems;
     public int inspections = 0, trueIndex, falseIndex;;
-    private long divisibleBy;
+    public BigInteger divisibleBy;
+    private BigInteger modulo = new BigInteger("0");
+    private char operator;
     String operations;
 
-    public Monkey(List<BigInteger> startingItems, String operations, long divisibleBy, int trueIndex, int falseIndex)
+    public Monkey(List<BigInteger> startingItems, String operations, BigInteger divisibleBy, int trueIndex, int falseIndex)
     {
         this.startingItems = startingItems;
         this.operations = operations.substring(13);
         this.divisibleBy = divisibleBy;
         this.trueIndex = trueIndex;
         this.falseIndex = falseIndex;
+        operator = operations.split(" ")[3].charAt(0);
     }
-    public int Test(long n)
+    public int Test(BigInteger n)
     {
-        return n % divisibleBy == 0 ? trueIndex : falseIndex;
+        return n.mod(divisibleBy).equals(modulo) ? trueIndex : falseIndex;
     }
-    public long Operation(long n)
+    public BigInteger Operation(BigInteger n)
     {
-        long newVal = 0;
+        BigInteger newVal = null;
         String[] splitted = operations.split(" ");
         switch (splitted[3].charAt(0))
         {
             case '+':
                 if(splitted[4].equals("old"))
-                    newVal = n + n;
+                    newVal = n.add(n);
                 else
-                    newVal = n + Long.parseLong(splitted[4]);
+                    newVal = n.add(new BigInteger(splitted[4]));
                 break;
             case '-':
                 if(splitted[4].equals("old"))
-                    newVal = 0;
+                    newVal = new BigInteger("0");
                 else
-                    newVal = n - Long.parseLong(splitted[4]);
+                    newVal = n.subtract(new BigInteger(splitted[4]));
                 break;
             case '*':
                 if(splitted[4].equals("old"))
-                    newVal = n * n;
+                    newVal = n.multiply(n);
                 else
-                    newVal = n * Long.parseLong(splitted[4]);
+                    newVal = n.multiply(new BigInteger(splitted[4]));
                 break;
             case '/':
                 if(splitted[4].equals("old"))
-                    newVal = 1;
+                    newVal = new BigInteger("1");
                 else
-                    newVal = n / Long.parseLong(splitted[4]);
+                    newVal = n.divide(new BigInteger(splitted[4]));
                 break;
         }
         return newVal;
