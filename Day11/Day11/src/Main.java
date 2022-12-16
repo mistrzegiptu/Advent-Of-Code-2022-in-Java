@@ -13,7 +13,6 @@ public class Main
     public static void main(String[] args) throws IOException
     {
         PartOne();
-        PartTwo();
     }
     public static void PartOne() throws IOException
     {
